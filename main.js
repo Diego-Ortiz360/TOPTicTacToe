@@ -4,23 +4,27 @@ const gameBoard = (function (){
 
     const checkPosition = (position) =>
     {
-        return gameBoard[position];
+            return gameBoard[position];   
     }
+
+    const checkLine = (position1, position2, position3) => 
+    {
+        if (checkPosition(position1) != undefined && checkPosition(position2) != undefined && checkPosition(position3) != undefined)        
+        {
+            return checkPosition(position1) == checkPosition(position2) && checkPosition(position2) == checkPosition(position3);
+        }
+
+        else {return false}
+        
+    }
+    
 
     const markMove = (playersymbol, position) =>
     {
         gameBoard[position] = playersymbol;
     }
-
-    const checkGameBoard = () => 
-    {
-        gameBoard.map((value)=>
-    {
-        console.log (value);
-    });
-    }
     
-    return {checkPosition, markMove, checkGameBoard};
+    return {checkPosition, checkLine, markMove};
 
 })();
 
@@ -37,9 +41,9 @@ function createPlayer(){
 
     const isNext = () => next;
 
-    const setNext = (status) => next = status;
+    const setNextTurn = (status) => next = status;
     
-    return {getSymbol, setSymbol, move, isNext, setNext};
+    return {getSymbol, setSymbol, move, isNext, setNextTurn};
 
 };
 
@@ -57,13 +61,34 @@ const gameController = (function (){
 
     const getRoundResult = (position) => roundResult[position];
 
-    const getAllTheRoundResults = () => roundResult.map ((value)=> console.log (value));
-
-    const nextPlay =() =>
+    const checkGameBoard = (gameBoard) =>
     {
-        
+        if (gameBoard.checkLine(0,1,2) ||
+            gameBoard.checkLine(3,4,5) ||
+            gameBoard.checkLine(6,7,8) ||
+            gameBoard.checkLine(0,4,8) ||
+            gameBoard.checkLine(6,4,2) ||
+            gameBoard.checkLine(0,3,6) ||
+            gameBoard.checkLine(1,4,7) ||
+            gameBoard.checkLine(2,4,8))
+    {
+        console.log ("hey");
     }
 
-    return {winnerOfTheRound, tieRound, winnerOfTheGame,setRoundResult,getRoundResult,getAllTheRoundResults, nextPlay};
+    else console.log ("Nope");
+    }
+
+    const checkGameBoardPosition = (gameBoard,position) =>
+    {
+        return gameBoard.checkPosition(position);
+    }
+
+    return {checkGameBoard, checkGameBoardPosition};
 })();
+
+gameBoard.markMove("x",6);
+gameBoard.markMove("x",4);
+gameBoard.markMove("y",2);
+
+gameController.checkGameBoard(gameBoard);
 
