@@ -14,81 +14,96 @@ const gameBoard = (function (){
             return checkPosition(position1) == checkPosition(position2) && checkPosition(position2) == checkPosition(position3);
         }
 
-        else {return false}
-        
+        else {return false}    
     }
-    
 
-    const markMove = (playersymbol, position) =>
+    const checkIfWin = () => 
+    ( 
+        checkLine(0,1,2) ||
+        checkLine(3,4,5) ||
+        checkLine(6,7,8) ||
+        checkLine(0,4,8) ||
+        checkLine(6,4,2) ||
+        checkLine(0,3,6) ||
+        checkLine(1,4,7) ||
+        checkLine(2,4,8) 
+    )
+    
+    const checkIfHasEmptyCell = () => gameBoard.includes(undefined);
+    
+    
+    const markMove = (position, playersymbol) =>
     {
         gameBoard[position] = playersymbol;
     }
     
-    return {checkPosition, checkLine, markMove};
-
+    return {checkPosition, checkLine, checkIfWin, checkIfHasEmptyCell, markMove};
 })();
 
-function createPlayer(){
 
+function createPlayer(gameController){
+    let name ="";
     let symbol = "";
-
+    const setName = (playerName) => name = playerName;
+    const getName = () => name;
     const getSymbol = () => symbol;
     const setSymbol = (symbolvalue) => symbol = symbolvalue;
     
-    const move = (position) => console.log (`Colocaste ${symbol} en la posicion ${position}`);
+    const move = (position) => 
+    {
+        gameController.playerMove(position,symbol,name);
+    }
 
-    let next = false;
-
-    const isNext = () => next;
-
-    const setNextTurn = (status) => next = status;
-    
-    return {getSymbol, setSymbol, move, isNext, setNextTurn};
-
+    return {setName,getName, getSymbol, setSymbol, move};
 };
 
-const gameController = (function (){
 
-    const winnerOfTheRound = () => console.log ("hey ganaste");
+const gameController = (function (gameBoard){
+
+    const winnerOfTheRound = (name) => console.log (`hey ${name} ganaste la ronda!`);
 
     const tieRound = () => console.log ("Hey, es empate");
 
     const winnerOfTheGame = () => console.log ("Hey ganaste el juego");
 
-    let roundResult = new Array(3);
+    let roundResult = new Array();
 
-    const setRoundResult = (position, value) => roundResult[position] = value;
 
-    const getRoundResult = (position) => roundResult[position];
-
-    const checkGameBoard = (gameBoard) =>
+    const playerMove = (position, symbol, name) =>
     {
-        if (gameBoard.checkLine(0,1,2) ||
-            gameBoard.checkLine(3,4,5) ||
-            gameBoard.checkLine(6,7,8) ||
-            gameBoard.checkLine(0,4,8) ||
-            gameBoard.checkLine(6,4,2) ||
-            gameBoard.checkLine(0,3,6) ||
-            gameBoard.checkLine(1,4,7) ||
-            gameBoard.checkLine(2,4,8))
-    {
-        console.log ("hey");
+        if (gameBoard.checkPosition(position) === undefined)
+        {
+            gameBoard.markMove(position, symbol);
+
+            if (gameBoard.checkIfWin())
+            {
+                winnerOfTheRound(name);
+
+                roundResult.push(name);
+
+                console.log (roundResult);
+            }
+            else if (!gameBoard.checkIfHasEmptyCell())
+            {
+                tieRound();
+
+                roundResult.push("tie");
+            }
+        }
+        else {console.log("El casillero esta ocupado, por favor juega de nuevo");}
     }
 
-    else console.log ("Nope");
-    }
+    return {playerMove};
 
-    const checkGameBoardPosition = (gameBoard,position) =>
-    {
-        return gameBoard.checkPosition(position);
-    }
+})(gameBoard);
 
-    return {checkGameBoard, checkGameBoardPosition};
-})();
 
-gameBoard.markMove("x",6);
-gameBoard.markMove("x",4);
-gameBoard.markMove("y",2);
+const player1 = createPlayer(gameController);
 
-gameController.checkGameBoard(gameBoard);
+player1.setName("Diego");
 
+player1.setSymbol("x");
+
+player1.move(0);
+player1.move(1);
+player1.move(2);
