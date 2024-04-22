@@ -4,6 +4,8 @@ const gameBoard = (function (){
 
     const cleanGameBoard = () => gameBoard = new Array (9); 
 
+    const getGameBoard = () => console.log(gameBoard);
+
     const checkPosition = (position) =>
     {
             return gameBoard[position];   
@@ -28,154 +30,140 @@ const gameBoard = (function (){
         checkLine(2,4,6) || // Diagonal 2
         checkLine(0,3,6) || // Column 1
         checkLine(1,4,7) || // Column 2
-        checkLine(2,5,8)  // Column 3
+        checkLine(2,5,8)    // Column 3
     )
     
     const checkIfHasEmptyCell = () => gameBoard.includes(undefined);
-    
     
     const markMove = (position, playersymbol) =>
     {
         gameBoard[position] = playersymbol;
     }
     
-    return {checkPosition, checkLine, checkIfWin, checkIfHasEmptyCell, markMove, cleanGameBoard};
+    return {checkPosition, checkLine, checkIfWin, checkIfHasEmptyCell, markMove, cleanGameBoard,getGameBoard};
 })();
 
 
 function createPlayer(gameController){
+
     let name ="";
     let symbol = "";
+
     const setName = (playerName) => name = playerName;
-    const getName = () => name;
+    const getname = () => name;
+
     const getSymbol = () => symbol;
     const setSymbol = (symbolvalue) => symbol = symbolvalue;
-    
-    const move = (position) => 
+
+    function move(position) 
     {
-        gameController.playerMove(position,symbol,name);
+        gameController.playerMove(position, this);
     }
 
-    return {setName,getName, getSymbol, setSymbol, move};
+    return {setName,getname, getSymbol, setSymbol, move};
 };
-
 
 const gameController = (function (gameBoard){
 
     const winnerOfTheRound = (name) => console.log (`hey ${name} ganaste la ronda!`);
 
-    const tie = () => console.log ("Hey, es empate, por favor juega de nuevo");
+    const tie = (roundOrGame) => console.log (`Hey!, the ${roundOrGame} is TIE, please play again!`);
 
     const winnerOfTheGame = (name) => console.log (`Hey ${name} ganaste el juego!`);
 
     let roundResult = new Array();
 
+    const getRoundResult = () => roundResult;
+
     const saveRoundResult = (value) => roundResult.push(value); 
 
-    const evaluateRoundResults = (arr) =>
+    const evaluateRoundResults = () =>
     {
-        const result = arr.reduce((acc, val) =>
-    {
-         if (!acc[val])
-        {
-            acc[val] = 1;
-        }
-        else 
-        {
-            acc[val]++;
-        }
-        return acc;
-    },{});
-
-    const winner = Object.keys(result).find(key => result[key] > 1 && key !==`tie`);
-
-    return ( winner || `tie` );
-    }
+        
+    const winner = roundResult.find( (value,index,self) =>  
+        
+        self.indexOf(value) !== index && value != `tie`
+    );
+        return ( winner || `tie`)
+        
+    };
 
 
-
-    const playerMove = (position, symbol, name) =>
-    {
+    const playerMove = (position, player) =>
+    { 
         if (gameBoard.checkPosition(position) === undefined)
         {
-            gameBoard.markMove(position, symbol);
 
+            gameBoard.markMove(position, player.getSymbol());
+
+            console.log (`El jugador ${player.getname()} jugó ${position} `);
+            
 
             if (gameBoard.checkIfWin())
             {
-                winnerOfTheRound(name);
-
-                saveRoundResult(name);
-                console.log(`Se pushea ${name} en roundresult`);
-
+                winnerOfTheRound(player.getname());
+                console.log (`el ganador de la ronda es: ${player.getname()}`);
+                saveRoundResult(player.getname());
                 gameBoard.cleanGameBoard();
-
             }
+
             else if (!gameBoard.checkIfHasEmptyCell())
             {
-                tie();
-
+                tie(`round`);
                 saveRoundResult(`tie`);
-                console.log(`Se pushea "tie" en roundresult`);
-
                 gameBoard.cleanGameBoard();
-
             }
 
             if (roundResult.length == 3)
             {
-                if (evaluateRoundResults(roundResult) !== `tie` )
-                {
-                    
-                    winnerOfTheGame(name);
-
-                    console.log ("se ejecuta si roundresult.length == 3");
-
+                if (evaluateRoundResults() !== `tie` )
+                {                    
+                    winnerOfTheGame(player.getname());
                     gameBoard.cleanGameBoard();
-
                 }
                 else 
                 { 
-                    tie();
-                
+                    tie(`game`);   
                     gameBoard.cleanGameBoard();
                 }
             }
-
         }
-        else {console.log("El casillero esta ocupado, por favor juega de nuevo");}
-
+        else { console.log (`The cell is already taken, please try again`);}
     }
 
     return {playerMove};
 
 })(gameBoard);
 
-
+/* 
 const player1 = createPlayer(gameController);
-player1.setName("Diego");
-player1.setSymbol("x");
+player1.setName(`Diego`);
+player1.setSymbol(`X`);
 
-const player2= createPlayer(gameController);
-player2.setName("Skynet");
-player2.setSymbol("O")
-
-player1.move(0);
-
-player1.move(1);
-
-player1.move(2);
+const player2 = createPlayer(gameController);
+player2.setName(`Skynet`);
+player2.setSymbol(`O`);
 
 
-player1.move(0);
+player2.move(0);
+player2.move(1);
+player2.move(2);
 
-player1.move(1);
+player1.move (0);
+player1.move (1);
+player1.move (2);
 
-player1.move(2);
 
 
-player1.move(0);
+player1.move (0);
+player2.move (1);
+player2.move (2);
 
-player1.move(1);
+player2.move (3);
+player1.move (4);
+player1.move (5);
 
-player1.move(2);
+player1.move (6);
+player2.move (7);
+player2.move (8); 
+ */
