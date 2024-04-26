@@ -1,3 +1,5 @@
+
+
 const gameBoard = (function (){
 
     let gameBoard = new Array(9);
@@ -43,6 +45,8 @@ const gameBoard = (function (){
     return {checkPosition, checkLine, checkIfWin, checkIfHasEmptyCell, markMove, cleanGameBoard,getGameBoard};
 })();
 
+
+
 const gameController = (function (gameBoard){
 
     const winnerOfTheRoundMsg = (name) => console.log (`hey ${name} you win the round!`);
@@ -53,6 +57,8 @@ const gameController = (function (gameBoard){
 
     let roundResult = new Array();
 
+    const getRundResult = () => roundResult;
+
     const saveRoundResult = (value) => roundResult.push(value); 
 
     const evaluateRoundResults = () =>
@@ -62,74 +68,114 @@ const gameController = (function (gameBoard){
         
         self.indexOf(value) !== index && value != `tie`
     );
-        return ( winner || `tie`)
-        
+        return ( winner || `tie`)        
     };
 
-function createPlayer(playerName, playerSymbol){
-
-    let name = playerName;
-    let symbol = playerSymbol;
-
-    const getname = () => name;
-    const getSymbol = () => symbol;
-
-    function move(position) 
+    const roundWon = (playerName) =>
     {
-        playerMove(position, this);
+        winnerOfTheRoundMsg(playerName);
+        console.log (`el ganador de la ronda es: ${playerName}`);
+        saveRoundResult(playerName);
+        gameBoard.cleanGameBoard();
     }
 
-    return {getname, getSymbol, move};
-};
+    const tiedRound = () =>
+    {
+        tieMsg(`round`);
+        saveRoundResult(`tie`);
+        gameBoard.cleanGameBoard();
+    }
 
-    const playerMove = (position, player) =>
-    { 
-        if (gameBoard.checkPosition(position) === undefined)
+
+    const gameWon = (playerName) =>
+    {
+        winnerOfTheGameMsg(playerName);
+        gameBoard.cleanGameBoard();
+    }
+
+    const tiedGame = () =>
         {
-
-            gameBoard.markMove(position, player.getSymbol());
-
-            console.log (`El jugador ${player.getname()} jugó ${position} `);
-            
-
-            if (gameBoard.checkIfWin())
-            {
-                winnerOfTheRoundMsg(player.getname());
-                console.log (`el ganador de la ronda es: ${player.getname()}`);
-                saveRoundResult(player.getname());
-                gameBoard.cleanGameBoard();
-            }
-
-            else if (!gameBoard.checkIfHasEmptyCell())
-            {
-                tieMsg(`round`);
-                saveRoundResult(`tie`);
-                gameBoard.cleanGameBoard();
-            }
-
-            if (roundResult.length == 3)
-            {
-                if (evaluateRoundResults() !== `tie` )
-                {                    
-                    winnerOfTheGameMsg(player.getname());
-                    gameBoard.cleanGameBoard();
-                }
-                else 
-                { 
-                    tieMsg(`game`);   
-                    gameBoard.cleanGameBoard();
-                }
-            }
+            tieMsg(`game`);   
+            gameBoard.cleanGameBoard();
         }
-        else { console.log (`The cell is already taken, please try again`);}
-    }
 
-    return {createPlayer, playerMove};
+    return {roundWon, tiedRound, gameWon, tiedGame, getRundResult, evaluateRoundResults};
 
 })(gameBoard);
 
-/* 
-const player1 = gameController.createPlayer("Diego", "x");
 
-console.log (player1.getname()); 
- */
+const playerController = (function (gameBoard,gameController)
+{
+    let players = 0
+
+    function createPlayer(playerName, playerSymbol)
+    {
+        if (players < 2)
+        {
+
+        players++;
+
+        let name = playerName;
+        let symbol = playerSymbol;
+
+        const getName = () => name;
+        const getSymbol = () => symbol;
+    
+        function move(position) 
+        {
+
+        if (gameBoard.checkPosition(position) === undefined)
+        {
+            gameBoard.markMove(position, getSymbol() );
+
+            console.log (`El jugador ${getName()} jugó ${position} `);
+        
+            if (gameBoard.checkIfWin())
+            {
+                gameController.roundWon(getName());                
+            }
+             
+            else if (!gameBoard.checkIfHasEmptyCell())
+            {
+                    gameController.tiedRound();
+                    
+            }
+
+            if (gameController.getRundResult().length == 3)
+            {
+                if (gameController.evaluateRoundResults() !== `tie` )
+                {                  
+                    gameController.gameWon(getName());
+                }
+                else 
+                { 
+                    gameController.tiedGame();
+                }
+            }
+        }
+        else { console.log (`The cell is already taken, please try again`);}       
+        }
+    
+        return {getName, getSymbol, move};
+        }
+
+        else (console.log ("Solo se puede jugar de a 2"));
+
+    };
+
+    return {createPlayer};
+    
+})(gameBoard,gameController);
+
+//Código para probar que funcione el crear los jugadores solamente, borrar todo para mantener limpio
+
+/* const player1 = playerController.createPlayer("Diego","x");
+
+console.log (player1.getName());
+console.log (player1.getSymbol());
+player1.move(0);
+
+const player2 = playerController.createPlayer("SKynet", "o");
+console.log (player2.getName());
+console.log (player2.getSymbol());
+player2.move(1); */
